@@ -4,13 +4,11 @@ from torchvision import datasets, transforms
 
 from logger import Logger
 
-# Hyperparameters
 num_epochs = 5
 num_classes = 10
 batch_size = 100
 learning_rate = 1e-3
 
-# MNIST dataset
 trainset = datasets.MNIST(
     root="../Data/", 
     train=True, 
@@ -24,7 +22,6 @@ testset = datasets.MNIST(
     transform=transforms.ToTensor(),
 )
 
-# Data loader
 trainloader = torch.utils.data.DataLoader(
     dataset=trainset, 
     batch_size=batch_size, 
@@ -37,7 +34,6 @@ testloader = torch.utils.data.DataLoader(
     shuffle=True
 )
 
-# Convolution Neural Network
 class ConvNet(nn.Module):
 
     def __init__(self, num_classes):
@@ -61,41 +57,34 @@ class ConvNet(nn.Module):
 
         out = self.layer1(X)
         out = self.layer2(out)
-        out = out.reshape(out.size(0), -1) # Flatten
+        out = out.reshape(out.size(0), -1)
         out = self.fc(out)
 
         return out
     
 model = ConvNet(num_classes)
-logger = Logger()
+logger = Logger() # instantiate logger
 
-# Loss and optimizer
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
-# Training
 for e in range(num_epochs):
-    logger.train(len(trainloader))
-    # print("Epoch {}/{}".format(e, num_epochs), end='.')
+    logger.train(len(trainloader)) # tell logger for training
     for images, labels in trainloader:
 
-        # Forward pass
         outputs = model(images)
         loss = criterion(outputs, labels)
 
-        # Backward pass
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
         
-        # Getting accuracy
         with torch.no_grad():
             correct = torch.argmax(outputs.data, 1) == labels
-            logger(model, loss.cpu(), correct.cpu(), learning_rate)
+            logger(model, loss.cpu(), correct.cpu(), learning_rate) # progress recording
 
-    # Testing
     model.eval()
-    logger.eval(len(testloader))
+    logger.eval(len(testloader)) # tell logger for evaluating
     with torch.no_grad():
         correct = 0
         total = 0
@@ -105,6 +94,6 @@ for e in range(num_epochs):
             loss = criterion(outputs, labels)
             _, predicted = torch.max(outputs.data, 1)
             correct = (predicted == labels)
-            logger(model, loss.cpu(), correct.cpu())
+            logger(model, loss.cpu(), correct.cpu()) # progress recording
             
-logger.flush()
+logger.flush() # clearing outputs
