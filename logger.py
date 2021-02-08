@@ -1,6 +1,5 @@
 import time
-import pandas as pd
-import matplotlib.pyplot as plt
+
 
 class LoadingBar:
     def __init__(self, length=50):
